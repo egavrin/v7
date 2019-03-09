@@ -5998,14 +5998,16 @@ static void encode_uint32(uint8_t *b, uint32_t v) {
   b[3] = v & 0xff;
 }
 
-void cs_ubjson_emit_int32(struct mbuf *buf, int32_t v) {
+void cs_ubjson_emit_int32(struct mbuf *buf, int32_t v)
+{
   uint8_t b[1 + sizeof(uint32_t)];
   b[0] = 'l';
-  encode_uint32(&b[1], (uint32_t) v);
+  encode_uint32(&b[1], (uint32_t)v);
   mbuf_append(buf, b, 1 + sizeof(uint32_t));
 }
 
-static void encode_uint64(uint8_t *b, uint64_t v) {
+static void encode_uint64(uint8_t *b, uint64_t v)
+{
   b[0] = (v >> 56) & 0xff;
   b[1] = (v >> 48) & 0xff;
   b[2] = (v >> 40) & 0xff;
@@ -6016,31 +6018,45 @@ static void encode_uint64(uint8_t *b, uint64_t v) {
   b[7] = v & 0xff;
 }
 
-void cs_ubjson_emit_int64(struct mbuf *buf, int64_t v) {
+void cs_ubjson_emit_int64(struct mbuf *buf, int64_t v)
+{
   uint8_t b[1 + sizeof(uint64_t)];
   b[0] = 'L';
-  encode_uint64(&b[1], (uint64_t) v);
+  encode_uint64(&b[1], (uint64_t)v);
   mbuf_append(buf, b, 1 + sizeof(uint64_t));
 }
 
-void cs_ubjson_emit_autoint(struct mbuf *buf, int64_t v) {
-  if (v >= INT8_MIN && v <= INT8_MAX) {
-    cs_ubjson_emit_int8(buf, (int8_t) v);
-  } else if (v >= 0 && v <= 255) {
-    cs_ubjson_emit_uint8(buf, (uint8_t) v);
-  } else if (v >= INT16_MIN && v <= INT16_MAX) {
-    cs_ubjson_emit_int16(buf, (int32_t) v);
-  } else if (v >= INT32_MIN && v <= INT32_MAX) {
-    cs_ubjson_emit_int32(buf, (int32_t) v);
-  } else if (v >= INT64_MIN && v <= INT64_MAX) {
-    cs_ubjson_emit_int64(buf, (int64_t) v);
-  } else {
+void cs_ubjson_emit_autoint(struct mbuf *buf, int64_t v)
+{
+  if (v >= INT8_MIN && v <= INT8_MAX)
+  {
+    cs_ubjson_emit_int8(buf, (int8_t)v);
+  }
+  else if (v >= 0 && v <= 255)
+  {
+    cs_ubjson_emit_uint8(buf, (uint8_t)v);
+  }
+  else if (v >= INT16_MIN && v <= INT16_MAX)
+  {
+    cs_ubjson_emit_int16(buf, (int32_t)v);
+  }
+  else if (v >= INT32_MIN && v <= INT32_MAX)
+  {
+    cs_ubjson_emit_int32(buf, (int32_t)v);
+  }
+  else if (v >= INT64_MIN && v <= INT64_MAX)
+  {
+    cs_ubjson_emit_int64(buf, (int64_t)v);
+  }
+  else
+  {
     /* TODO(mkm): use "high-precision" stringified type */
     abort();
   }
 }
 
-void cs_ubjson_emit_float32(struct mbuf *buf, float v) {
+void cs_ubjson_emit_float32(struct mbuf *buf, float v)
+{
   uint32_t n;
   uint8_t b[1 + sizeof(uint32_t)];
   b[0] = 'd';
@@ -6049,7 +6065,8 @@ void cs_ubjson_emit_float32(struct mbuf *buf, float v) {
   mbuf_append(buf, b, 1 + sizeof(uint32_t));
 }
 
-void cs_ubjson_emit_float64(struct mbuf *buf, double v) {
+void cs_ubjson_emit_float64(struct mbuf *buf, double v)
+{
   uint64_t n;
   uint8_t b[1 + sizeof(uint64_t)];
   b[0] = 'D';
@@ -6058,55 +6075,68 @@ void cs_ubjson_emit_float64(struct mbuf *buf, double v) {
   mbuf_append(buf, b, 1 + sizeof(uint64_t));
 }
 
-void cs_ubjson_emit_autonumber(struct mbuf *buf, double v) {
-  int64_t i = (int64_t) v;
-  if ((double) i == v) {
+void cs_ubjson_emit_autonumber(struct mbuf *buf, double v)
+{
+  int64_t i = (int64_t)v;
+  if ((double)i == v)
+  {
     cs_ubjson_emit_autoint(buf, i);
-  } else {
+  }
+  else
+  {
     cs_ubjson_emit_float64(buf, v);
   }
 }
 
-void cs_ubjson_emit_size(struct mbuf *buf, size_t v) {
+void cs_ubjson_emit_size(struct mbuf *buf, size_t v)
+{
   /* TODO(mkm): use "high-precision" stringified type */
-  assert((uint64_t) v < INT64_MAX);
-  cs_ubjson_emit_autoint(buf, (int64_t) v);
+  assert((uint64_t)v < INT64_MAX);
+  cs_ubjson_emit_autoint(buf, (int64_t)v);
 }
 
-void cs_ubjson_emit_string(struct mbuf *buf, const char *s, size_t len) {
+void cs_ubjson_emit_string(struct mbuf *buf, const char *s, size_t len)
+{
   mbuf_append(buf, "S", 1);
   cs_ubjson_emit_size(buf, len);
   mbuf_append(buf, s, len);
 }
 
-void cs_ubjson_emit_bin_header(struct mbuf *buf, size_t len) {
+void cs_ubjson_emit_bin_header(struct mbuf *buf, size_t len)
+{
   mbuf_append(buf, "[$U#", 4);
   cs_ubjson_emit_size(buf, len);
 }
 
-void cs_ubjson_emit_bin(struct mbuf *buf, const char *s, size_t len) {
+void cs_ubjson_emit_bin(struct mbuf *buf, const char *s, size_t len)
+{
   cs_ubjson_emit_bin_header(buf, len);
   mbuf_append(buf, s, len);
 }
 
-void cs_ubjson_open_object(struct mbuf *buf) {
+void cs_ubjson_open_object(struct mbuf *buf)
+{
   mbuf_append(buf, "{", 1);
 }
 
-void cs_ubjson_emit_object_key(struct mbuf *buf, const char *s, size_t len) {
+void cs_ubjson_emit_object_key(struct mbuf *buf, const char *s, size_t len)
+{
   cs_ubjson_emit_size(buf, len);
   mbuf_append(buf, s, len);
 }
 
-void cs_ubjson_close_object(struct mbuf *buf) {
+void cs_ubjson_close_object(struct mbuf *buf)
+{
   mbuf_append(buf, "}", 1);
 }
 
-void cs_ubjson_open_array(struct mbuf *buf) {
+void cs_ubjson_open_array(struct mbuf *buf)
+{
   mbuf_append(buf, "[", 1);
 }
 
-void cs_ubjson_close_array(struct mbuf *buf) {
+void cs_ubjson_close_array(struct mbuf *buf)
+{
   mbuf_append(buf, "]", 1);
 }
 
@@ -6117,7 +6147,7 @@ void cs_ubjson_dummy();
 #line 1 "./src/../../common/cs_file.c"
 /**/
 #endif
-/*
+  /*
  * Copyright (c) 2015 Cesanta Software Limited
  * All rights reserved
  */
@@ -6131,18 +6161,26 @@ void cs_ubjson_dummy();
 #include <sys/mman.h>
 #endif
 
-char *cs_read_file(const char *path, size_t *size) {
+char *cs_read_file(const char *path, size_t *size)
+{
   FILE *fp;
   char *data = NULL;
-  if ((fp = fopen(path, "rb")) == NULL) {
-  } else if (fseek(fp, 0, SEEK_END) != 0) {
+  if ((fp = fopen(path, "rb")) == NULL)
+  {
+  }
+  else if (fseek(fp, 0, SEEK_END) != 0)
+  {
     fclose(fp);
-  } else {
+  }
+  else
+  {
     *size = ftell(fp);
-    data = (char *) malloc(*size + 1);
-    if (data != NULL) {
+    data = (char *)malloc(*size + 1);
+    if (data != NULL)
+    {
       fseek(fp, 0, SEEK_SET); /* Some platforms might not have rewind(), Oo */
-      if (fread(data, 1, *size, fp) != *size) {
+      if (fread(data, 1, *size, fp) != *size)
+      {
         free(data);
         return NULL;
       }
@@ -6154,15 +6192,18 @@ char *cs_read_file(const char *path, size_t *size) {
 }
 
 #ifdef CS_MMAP
-char *cs_mmap_file(const char *path, size_t *size) {
+char *cs_mmap_file(const char *path, size_t *size)
+{
   char *r;
   int fd = open(path, O_RDONLY);
   struct stat st;
-  if (fd == -1) return NULL;
+  if (fd == -1)
+    return NULL;
   fstat(fd, &st);
-  *size = (size_t) st.st_size;
-  r = (char *) mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
-  if (r == MAP_FAILED) return NULL;
+  *size = (size_t)st.st_size;
+  r = (char *)mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+  if (r == MAP_FAILED)
+    return NULL;
   return r;
 }
 #endif
@@ -6170,12 +6211,12 @@ char *cs_mmap_file(const char *path, size_t *size) {
 #line 1 "./src/../../common/coroutine.c"
 /**/
 #endif
-/*
+  /*
  * Copyright (c) 2015 Cesanta Software Limited
  * All rights reserved
  */
 
-/*
+  /*
  * Module that provides generic macros and functions to implement "coroutines",
  * i.e. C code that uses `mbuf` as a stack for function calls.
  *
@@ -6191,15 +6232,19 @@ char *cs_mmap_file(const char *path, size_t *size) {
  * Unwinds stack by 1 function. Used when we're returning from function and
  * when an exception is thrown.
  */
-static void _level_up(struct cr_ctx *p_ctx) {
+static void _level_up(struct cr_ctx *p_ctx)
+{
   /* get size of current function's stack data */
   size_t locals_size = _CR_CURR_FUNC_LOCALS_SIZE(p_ctx);
 
   /* check stacks underflow */
-  if (_CR_STACK_FID_UND_CHECK(p_ctx, 1 /*fid*/)) {
+  if (_CR_STACK_FID_UND_CHECK(p_ctx, 1 /*fid*/))
+  {
     p_ctx->status = CR_RES__ERR_STACK_CALL_UNDERFLOW;
     return;
-  } else if (_CR_STACK_DATA_UND_CHECK(p_ctx, locals_size)) {
+  }
+  else if (_CR_STACK_DATA_UND_CHECK(p_ctx, locals_size))
+  {
     p_ctx->status = CR_RES__ERR_STACK_DATA_UNDERFLOW;
     return;
   }
@@ -6210,9 +6255,11 @@ static void _level_up(struct cr_ctx *p_ctx) {
   p_ctx->stack_ret.len = p_ctx->cur_fid_idx;
 
   /* if we have exception marker here, adjust cur_fid_idx */
-  while (CR_CURR_FUNC_C(p_ctx) == CR_FID__TRY_MARKER) {
+  while (CR_CURR_FUNC_C(p_ctx) == CR_FID__TRY_MARKER)
+  {
     /* check for stack underflow */
-    if (_CR_STACK_FID_UND_CHECK(p_ctx, _CR_TRY_SIZE)) {
+    if (_CR_STACK_FID_UND_CHECK(p_ctx, _CR_TRY_SIZE))
+    {
       p_ctx->status = CR_RES__ERR_STACK_CALL_UNDERFLOW;
       return;
     }
@@ -6220,10 +6267,14 @@ static void _level_up(struct cr_ctx *p_ctx) {
   }
 }
 
-enum cr_status cr_on_iter_begin(struct cr_ctx *p_ctx) {
-  if (p_ctx->status != CR_RES__OK) {
+enum cr_status cr_on_iter_begin(struct cr_ctx *p_ctx)
+{
+  if (p_ctx->status != CR_RES__OK)
+  {
     goto out;
-  } else if (p_ctx->called_fid != CR_FID__NONE) {
+  }
+  else if (p_ctx->called_fid != CR_FID__NONE)
+  {
     /* need to call new function */
 
     size_t locals_size = p_ctx->p_func_descrs[p_ctx->called_fid].locals_size;
@@ -6253,39 +6304,48 @@ enum cr_status cr_on_iter_begin(struct cr_ctx *p_ctx) {
 
     /* clear called_fid */
     p_ctx->called_fid = CR_FID__NONE;
-
-  } else if (p_ctx->need_return) {
+  }
+  else if (p_ctx->need_return)
+  {
     /* need to return from the currently running function */
 
     _level_up(p_ctx);
-    if (p_ctx->status != CR_RES__OK) {
+    if (p_ctx->status != CR_RES__OK)
+    {
       goto out;
     }
 
     p_ctx->need_return = 0;
-
-  } else if (p_ctx->need_yield) {
+  }
+  else if (p_ctx->need_yield)
+  {
     /* need to yield */
 
     p_ctx->need_yield = 0;
     p_ctx->status = CR_RES__OK_YIELDED;
     goto out;
-
-  } else if (p_ctx->thrown_exc != CR_EXC_ID__NONE) {
+  }
+  else if (p_ctx->thrown_exc != CR_EXC_ID__NONE)
+  {
     /* exception was thrown */
 
     /* unwind stack until we reach the bottom, or find some try-catch blocks */
-    do {
+    do
+    {
       _level_up(p_ctx);
-      if (p_ctx->status != CR_RES__OK) {
+      if (p_ctx->status != CR_RES__OK)
+      {
         goto out;
       }
 
-      if (_CR_TRY_MARKER(p_ctx) == CR_FID__TRY_MARKER) {
+      if (_CR_TRY_MARKER(p_ctx) == CR_FID__TRY_MARKER)
+      {
         /* we have some try-catch here, go to the first catch */
         CR_CURR_FUNC_C(p_ctx) = _CR_TRY_CATCH_FID(p_ctx);
         break;
-      } else if (CR_CURR_FUNC_C(p_ctx) == CR_FID__NONE) {
+      }
+      else if (CR_CURR_FUNC_C(p_ctx) == CR_FID__NONE)
+      {
         /* we've reached the bottom of the stack */
         p_ctx->status = CR_RES__ERR_UNCAUGHT_EXCEPTION;
         break;
@@ -6303,7 +6363,8 @@ out:
 
 void cr_context_init(struct cr_ctx *p_ctx, union user_arg_ret *p_arg_retval,
                      size_t arg_retval_size,
-                     const struct cr_func_desc *p_func_descrs) {
+                     const struct cr_func_desc *p_func_descrs)
+{
   /*
    * make sure we haven't mistakenly included "zero-sized" `.._arg_t`
    * structure in `union user_arg_ret`.
@@ -6326,7 +6387,8 @@ void cr_context_init(struct cr_ctx *p_ctx, union user_arg_ret *p_arg_retval,
   _CR_CALL_PREPARE(p_ctx, CR_FID__NONE, 0, 0, CR_FID__NONE);
 }
 
-void cr_context_free(struct cr_ctx *p_ctx) {
+void cr_context_free(struct cr_ctx *p_ctx)
+{
   mbuf_free(&p_ctx->stack_data);
   mbuf_free(&p_ctx->stack_ret);
 }
@@ -6334,33 +6396,36 @@ void cr_context_free(struct cr_ctx *p_ctx) {
 #line 1 "./src/../builtin/file.c"
 /**/
 #endif
-/*
+  /*
  * Copyright (c) 2014 Cesanta Software Limited
  * All rights reserved
  */
 
-/* Amalgamated: #include "v7.h" */
-/* Amalgamated: #include "osdep.h" */
-/* Amalgamated: #include "mbuf.h" */
-/* Amalgamated: #include "cs_file.h" */
-/* Amalgamated: #include "v7_features.h" */
+  /* Amalgamated: #include "v7.h" */
+  /* Amalgamated: #include "osdep.h" */
+  /* Amalgamated: #include "mbuf.h" */
+  /* Amalgamated: #include "cs_file.h" */
+  /* Amalgamated: #include "v7_features.h" */
 
 #if defined(V7_ENABLE_FILE) && !defined(V7_NO_FS)
 
 #ifdef V7_ENABLE_SPIFFS
 #include <spiffs.h>
 
-typedef struct {
+typedef struct
+{
   spiffs_DIR dh;
   struct spiffs_dirent de;
 } DIR;
 
-DIR *opendir(const char *dir_name) {
+DIR *opendir(const char *dir_name)
+{
   DIR *dir = NULL;
   extern spiffs fs;
 
-  if (dir_name != NULL && (dir = (DIR *) malloc(sizeof(*dir))) != NULL &&
-      SPIFFS_opendir(&fs, (char *) dir_name, &dir->dh) == NULL) {
+  if (dir_name != NULL && (dir = (DIR *)malloc(sizeof(*dir))) != NULL &&
+      SPIFFS_opendir(&fs, (char *)dir_name, &dir->dh) == NULL)
+  {
     free(dir);
     dir = NULL;
   }
@@ -6368,8 +6433,10 @@ DIR *opendir(const char *dir_name) {
   return dir;
 }
 
-int closedir(DIR *dir) {
-  if (dir != NULL) {
+int closedir(DIR *dir)
+{
+  if (dir != NULL)
+  {
     SPIFFS_closedir(&dir->dh);
     free(dir);
   }
@@ -6379,7 +6446,8 @@ int closedir(DIR *dir) {
 #define d_name name
 #define dirent spiffs_dirent
 
-struct dirent *readdir(DIR *dir) {
+struct dirent *readdir(DIR *dir)
+{
   return SPIFFS_readdir(&dir->dh, &dir->de);
 }
 #endif /* V7_ENABLE_SPIFFS */
@@ -6388,15 +6456,18 @@ static v7_val_t s_file_proto;
 static const char s_fd_prop[] = "__fd";
 
 #ifndef NO_LIBC
-static FILE *v7_val_to_file(v7_val_t val) {
-  return (FILE *) v7_to_foreign(val);
+static FILE *v7_val_to_file(v7_val_t val)
+{
+  return (FILE *)v7_to_foreign(val);
 }
 
-static v7_val_t v7_file_to_val(FILE *file) {
+static v7_val_t v7_file_to_val(FILE *file)
+{
   return v7_create_foreign(file);
 }
 
-static int v7_is_file_type(v7_val_t val) {
+static int v7_is_file_type(v7_val_t val)
+{
   return v7_is_foreign(val);
 }
 #else
@@ -6405,14 +6476,17 @@ v7_val_t v7_file_to_val(FILE *file);
 int v7_is_file_type(v7_val_t val);
 #endif
 
-static v7_val_t File_eval(struct v7 *v7) {
+static v7_val_t File_eval(struct v7 *v7)
+{
   v7_val_t arg0 = v7_arg(v7, 0);
   v7_val_t res = v7_create_undefined();
 
-  if (v7_is_string(arg0)) {
+  if (v7_is_string(arg0))
+  {
     size_t n;
     const char *s = v7_to_string(v7, &arg0, &n);
-    if (v7_exec_file(v7, s, &res) != V7_OK) {
+    if (v7_exec_file(v7, s, &res) != V7_OK)
+    {
       v7_throw_value(v7, res);
     }
   }
@@ -6420,11 +6494,13 @@ static v7_val_t File_eval(struct v7 *v7) {
   return res;
 }
 
-static v7_val_t f_read(struct v7 *v7, int all) {
+static v7_val_t f_read(struct v7 *v7, int all)
+{
   v7_val_t this_obj = v7_get_this(v7);
   v7_val_t arg0 = v7_get(v7, this_obj, s_fd_prop, sizeof(s_fd_prop) - 1);
 
-  if (v7_is_file_type(arg0)) {
+  if (v7_is_file_type(arg0))
+  {
     struct mbuf m;
     char buf[BUFSIZ];
     int n;
@@ -6432,19 +6508,23 @@ static v7_val_t f_read(struct v7 *v7, int all) {
 
     /* Read file contents into mbuf */
     mbuf_init(&m, 0);
-    while ((n = fread(buf, 1, sizeof(buf), fp)) > 0) {
+    while ((n = fread(buf, 1, sizeof(buf), fp)) > 0)
+    {
       mbuf_append(&m, buf, n);
-      if (!all) {
+      if (!all)
+      {
         break;
       }
     }
 
     /* Proactively close the file on EOF or read error */
-    if (n <= 0) {
+    if (n <= 0)
+    {
       fclose(fp);
     }
 
-    if (m.len > 0) {
+    if (m.len > 0)
+    {
       v7_val_t res = v7_create_string(v7, m.buf, m.len, 1);
       mbuf_free(&m);
       return res;
@@ -6453,7 +6533,8 @@ static v7_val_t f_read(struct v7 *v7, int all) {
   return v7_create_string(v7, "", 0, 1);
 }
 
-static v7_val_t File_readAll(struct v7 *v7) {
+static v7_val_t File_readAll(struct v7 *v7)
+{
   return f_read(v7, 1);
 }
 
@@ -6495,7 +6576,8 @@ static v7_val_t File_open(struct v7 *v7) {
 
   if (v7_is_string(arg0)) {
     size_t n1, n2;
-    const char *s1 = v7_to_string(v7, &arg0, &n1);
+    const char *s1
+     = v7_to_string(v7, &arg0, &n1);
     const char *s2 = "rb"; /* Open files in read mode by default */
     if (v7_is_string(arg1)) {
       s2 = v7_to_string(v7, &arg1, &n2);
@@ -6503,8 +6585,9 @@ static v7_val_t File_open(struct v7 *v7) {
     fp = fopen(s1, s2);
     if (fp != NULL) {
       v7_val_t obj = v7_create_object(v7);
-      v7_set_proto(obj, s_file_proto);
-      v7_set(v7, obj, s_fd_prop, sizeof(s_fd_prop) - 1, V7_PROPERTY_DONT_ENUM,
+      v7_set_proto (obj, s_file_proto);
+      v7_set(v7, 
+      obj, s_fd_prop, sizeof(s_fd_prop) - 1, V7_PROPERTY_DONT_ENUM,
              v7_file_to_val(fp));
       return obj;
     }
@@ -6566,12 +6649,12 @@ static v7_val_t File_list(struct v7 *v7) {
       result = v7_create_array(v7);
       while ((dp = readdir(dirp)) != NULL) {
         /* Do not show current and parent dirs */
-        if (strcmp((const char *) dp->d_name, ".") == 0 ||
+        if (strcmp( (const char *) dp- >d_name, ".") == 0 ||
             strcmp((const char *) dp->d_name, "..") == 0) {
           continue;
         }
         /* Add file name to the list */
-        v7_array_push(v7, result,
+        v7_array_push (v7, result,
                       v7_create_string(v7, (const char *) dp->d_name,
                                        strlen((const char *) dp->d_name), 1));
       }
